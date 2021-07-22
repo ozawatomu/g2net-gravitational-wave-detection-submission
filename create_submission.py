@@ -5,7 +5,7 @@ import util_functions
 from PIL import Image
 import numpy as np
 import csv
-from my_models import ConvModel
+import my_models
 
 
 
@@ -25,7 +25,7 @@ def main():
 
 	# Prepare model
 	comp_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-	model = torch.load("trained-models\\1626915503\\11.pt").to(comp_device)
+	model = torch.load("trained-models\\1626928232\\28.pt").to(comp_device)
 	model.eval()
 
 	# Make predictions

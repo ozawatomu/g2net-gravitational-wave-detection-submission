@@ -8,7 +8,7 @@ from os.path import join
 import pickle
 from matplotlib import pyplot as plt
 import util_functions
-from my_models import ConvModel
+import my_models
 import warnings
 
 
@@ -34,7 +34,7 @@ def main():
 
 	# Prepare model
 	comp_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-	model = ConvModel().to(comp_device)
+	model = my_models.Model2().to(comp_device)
 	model.train()
 
 	# Set hyperparameters

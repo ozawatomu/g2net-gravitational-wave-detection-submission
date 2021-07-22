@@ -1,10 +1,24 @@
-from os import walk, makedirs
+from os import walk, makedirs, devnull
 from os.path import basename, splitext, join, exists
+import sys
 import numpy as np
 import torch
 from nnAudio.Spectrogram import CQT1992v2
 from PIL import Image
 import csv
+import logging
+logging.disable = True
+
+
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
 
 
 
@@ -34,12 +48,12 @@ def normalize_array(array, value_from=0, value_to=1):
 
 
 
-def wave_path_to_rgb_spectrogram_img(wave_path):
+def wave_path_to_rgb_spectrogram_img(wave_path, sr=2048, fmin=20, fmax=1024, hop_length=64):
 	wave_arrays = np.load(wave_path)
 
 	spectrogram_arrays = []
 	for wave_array in wave_arrays:
-		spectrogram_array = wave_to_spectrogram_array(wave_array)
+		spectrogram_array = wave_to_spectrogram_array(wave_array, sr, fmin, fmax, hop_length)
 		spectrogram_array_normalized = normalize_array(spectrogram_array, 0, 255)
 		spectrogram_arrays.append(spectrogram_array_normalized)
 
@@ -48,10 +62,12 @@ def wave_path_to_rgb_spectrogram_img(wave_path):
 
 
 
-def wave_to_spectrogram_array(wave_array):
+def wave_to_spectrogram_array(wave_array, sr=2048, fmin=20, fmax=1024, hop_length=64):
 	torch.from_numpy(wave_array)
 	wave_tensor = torch.from_numpy(wave_array).float()
-	transform = CQT1992v2(sr=2048, fmin=20, fmax=1024, hop_length=64)
+	transform = None
+	with HiddenPrints():
+		transform = CQT1992v2(sr=sr, fmin=fmin, fmax=fmax, hop_length=hop_length)
 	spectrogram_tensor = transform(wave_tensor)
 	spectrogram_array = np.array(spectrogram_tensor)
 	return spectrogram_array.reshape(spectrogram_array.shape[1], -1)
